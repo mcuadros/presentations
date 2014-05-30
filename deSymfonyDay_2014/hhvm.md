@@ -28,6 +28,8 @@ Contribuidor en muchos proyectos OSS
 - En el **2010** se hace público HPHPc y se comienza con el desarrollo de HHVM, igualando el rendimiento de HPHPc en el **2012**
 
 - En el **2013** la plataforma de Facebook empieza a usar HHVM y se declara obsoleto HPHPc
+
+- A finales del **2013**, grandes empresas lo incorporán a su catálogo de servicios: Heroku, Travis-CI o ServerGrove
 ---
 ## Virtual Machine
 - Compila PHP a **código máquina x64** con un compilador just-in-time (JIT)
@@ -60,14 +62,16 @@ https://gist.github.com/mcuadros/9633632
 ```
 ---
 ## Compatibilidad
-- Más de **23 frameworks** y librerias funcionan al 100%, laravel, drupal, composer, phpbb3, doctrine2, twig, etc
+- Más de **25 frameworks** y librerias funcionan al 100%, laravel, drupal, composer, phpbb3, doctrine2, twig, guzzle,  etc
 
-- Y muchos otros superán los test en un 93%, como es el caso de **symfony** que los pasas en un 98.95%
+- **Symfony** y todos sus componentes pasan el 98.92% de los tests, la mayória de los fallos son por el tests y no por la implementación en si.
+
+- Y muchos otros superán los test en un 93%
 
 
 ![white,dark_gray](Datos obtenidos de:)
 ![white,dark_gray](http://www.hhvm.com/frameworks/)
-![white,dark_gray](actualización 2014-05-21)
+![white,dark_gray](actualización 2014-05-29)
 ---
 
 ## Entendiendo JIT
@@ -106,14 +110,35 @@ https://gist.github.com/mcuadros/9633632
 
 - Pueden ser escritas en **PHP, Hack o C++** o una combinación de las 3
 
-- Son muy **facililes e intiutivas** de escribir, muy similar a PHP-CPP
----
-```php
-static Array HHVM_FUNCTION(add, const String& name, const String& value) {
-  Array output = Array();
-  output.add(name, value)
+- Son muy **facililes e intiutivas** de escribir
 
-  return output;
+---
+## HHVM: ~12 lineas de código claro:
+
+```php
+Array HHVM_FUNCTION(array_column, const Array& arr, const Variant& col, const Variant& key) {
+    Array ret;
+    for (auto &pair : arr) {
+        Variant key = pair.first, val = pair.second;
+        if (val.isArray()) continue;
+
+        Array aVal = val.toArray();
+        Variant cVal = col.isNull() ? aVal : aVal[col];
+        ret.add(aVal[key]], cVal);
+    }
+
+    return ret;
+}
+```
+---
+## ZendEngine: ~90 lineas de código ininteligible como este:
+```php
+} else if ((Z_TYPE_PP(zcolumn) == IS_STRING) &&
+    (zend_hash_find(ht, Z_STRVAL_PP(zcolumn), Z_STRLEN_PP(zcolumn) + 1, (void)&zcolval) == FAILURE)) {
+            continue;
+} else if ((Z_TYPE_PP(zcolumn) == IS_LONG) &&
+    (zend_hash_index_find(ht, Z_LVAL_PP(zcolumn), (void)&zcolval) == FAILURE)) {
+            continue;
 }
 ```
 ---
