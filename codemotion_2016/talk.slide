@@ -1,0 +1,165 @@
+Analyzing 900 millions commits with Go
+16 Nov 2016
+
+Máximo Cuadros
+VP of Engineering at source{d} 
+mcuadros@gmail.com
+https://github.com/mcuadros
+@mcuadros_
+
+* Overview 
+
+- A bit of context 
+- Why Go? 
+- How we built source{d} using Go
+
+* A bit of context
+
+* What is source{d}
+
+- Our main goal is *understand*the*FOSS*
+- We *analyze* the content of *Git* repositories
+- We *monetize* through the *recruitment* (our team is being hired using this method)
+
+* Some numbers
+
+- +17M of repositories stored and analyzed
+- +90TB of storage 
+- +900 millions of commits analyzed
+- +30 employees / +10 nationalities
+- $6M fund raising
+
+* Why Go?
+
+- Simple and miminalistic language, *easy*to*learn*
+- *Fast*to*code* as Python, Ruby or PHP, but *fast*to*execute* as Java
+- *Concurrency* is built in feature
+
+*source{d}* has being written in Go since the first day
+
+* How we build source{d} using Go
+
+* Phase #1: Repository discovery
+
+* The avilable resources 
+
+We need the entrypoints of the repositories *all*over*the*world*, so we explored 
+the available resources:
+
+- *GitHub*Archive*, is a project collecting GH API events since 2011
+- *GHTorrent*, same but since 2013, but they have alternative formats
+- *GitHub*Data*, official GitHub dataset with 2.8 millons of repositories
+
+Nothing about other sources like BitBucket, Gitlab, etc
+
+* So ... we went directly to the source 
+
+We retrieve the URL from the repositories from *different*SaaS* as:
+
+- *GitHub* - 17M repositories* - [[http://github.com/google/go-github][github.com/google/go-github.com]]
+- *BitBucket* - 150k repositories*
+- and more comming such as GitLab, CodePlex, etc.
+.caption *public repositories, not includin forks
+
+
+And also we *crawl* the web looking for *self-hosted* services using _cgit_ 
+
+
+
+* Phase #2: Fetching ALL repositories
+
+* Cloning the repository
+
+- Retrieve all the available *git*objects*, from the remote, including all branches. In [[http://shafiulazam.com/gitbook/7_the_packfile.html][packfile]] format.
+
+- Packfile format is *compressed* and *deltified*, random access to it requires a full scan, so we need to build a index  
+
+- Store other relevant information as: references, remote and configuration
+
+The process of storing and index generation is done in parallel with goroutines, to avoid read the file being written 
+
+* .git anatomy 
+
+ .git
+ ├── config
+ ├── HEAD
+ ├── objects
+ │   ├── info
+ │   └── pack
+ │       ├── pack-34e2a300f8de20e6bff25834a5dd696c991714b7.idx
+ │       └── pack-34e2a300f8de20e6bff25834a5dd696c991714b7.pack
+ └── refs
+     ├── heads
+     │   └── master
+     ├── remotes
+     │   └── origin
+     │       └── HEAD
+     └── tags
+
+* Storage in a distriuted filesystem
+
+Since we are working at a massive scale we cannot simply store the spare files of a _.git_ folder we need to store this in a *efficient*way* .
+
+Some of the requirements:
+
+- Minimun number of files, idealy *one*file*
+- *Update* without write the full file
+- *Seekable* content
+
+
+* Our own archive format: śiva format
+
+We evaluated many archive formats such as: _zip_, _tar_, _har_, etc.
+None fits our requirements, so we created our *own*format*, of course with *Go*.
+
+- Constant-time random file access
+- Seekable access to the contained files 
+- Concatenable archive files
+- Open source - [[https://github.com/src-d/go-siva][github.com/src-d/go-siva]]
+
+.image assets/siva.png 220 _
+
+* Phase #3: Analyzing the commits
+
+* Extracting the commits
+
+The commits are *contained* in the packfiles, along with other many useful objects:
+
+- Commit
+- Tree
+- Blob
+- Tag
+- OFS Delta
+- REF Delta
+
+The first 4 object types are *well*known* by all of us, but the last two are *internal*, to the packfile format. The deltas are the method used by git for *save*space* 
+
+* Handling git from Go
+
+git is compound of many different protocols, formats and algorithms. Thats why not many languages has available a native implementation.
+
+Available native libraries:
+
+- *libgit2*, pure _C_, the most used and wrapped in dozens of languages, including Go
+- *jgit*, pure _Java_, used by Eclipse, Gerrit, and many others
+
+In Go:
+
+- *git2go*, wrap of _libgit2_, is the most complete implementation 
+- *gogits/go*, pure _Go_, partial implementation and abandoned project
+
+and many other very partial and abandoned implementations.
+
+* go-git, a pure Go git implementation
+
+
+- Depenncy free, *pure*Go*, without any C dependency
+- Highly extensible, following *open/close*principle*
+- *new*v4* aims to be a replacement of *git2go*. for reading
+
+.image assets/go-git.png 200 _
+
+
+*but*why?*
+We can perform more *low*level*operations* than other libraries. Also was extremly useful to improve our knowledge about *git internals*. And a good oportunity to contribute to the community
+
