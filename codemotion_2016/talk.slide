@@ -66,7 +66,7 @@ And also we *crawl* the web looking for *self-hosted* services using _cgit_
 
 
 
-* Phase #2: Fetching ALL repositories
+* Phase #2: Fetching 17.991.286 repositories
 
 * Cloning the repository
 
@@ -119,9 +119,9 @@ None fits our requirements, so we created our *own*format*, of course with *Go*.
 
 .image assets/siva.png 220 _
 
-* Phase #3: Analyzing the commits
+* Phase #3: Analyzing the repositories 
 
-* Extracting the commits
+* Extracting 967.345.715 commits
 
 The commits are *contained* in the packfiles, along with other many useful objects:
 
@@ -152,7 +152,6 @@ and many other very partial and abandoned implementations.
 
 * go-git, a pure Go git implementation
 
-
 - Depenncy free, *pure*Go*, without any C dependency
 - Highly extensible, following *open/close*principle*
 - *new*v4* aims to be a replacement of *git2go*. for reading
@@ -161,5 +160,27 @@ and many other very partial and abandoned implementations.
 
 
 *but*why?*
-We can perform more *low*level*operations* than other libraries. Also was extremly useful to improve our knowledge about *git internals*. And a good oportunity to contribute to the community
+We can perform more *low*level*operations* than other libraries. Also was extremly useful to improve our knowledge about *git*internals*. And a good oportunity to contribute to the community
+
+* Detecting the language of 100.000.000.000 files
+
+The language detection can be archive using [[https://github.com/github/linguist][*linguist*]] a library created by GitHub. Linguist is used to create the famous bar:
+.image assets/languages.png _ 1000
+
+Detection is done by:
+
+- Extension
+- Language disambiguation
+
+*simple-linguist*, is our port to _Go_ of the original _Ruby_ library, with a few less precission in arcane languages but with a improve of *performance*of*100x*
+
+
+
+* Import recognition
+
+Another important step from the commit analysis is the import recognition, 
+
+
+* Modification identification
+To be filled
 
