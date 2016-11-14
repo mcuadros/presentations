@@ -7,13 +7,16 @@ mcuadros@gmail.com
 https://github.com/mcuadros
 @mcuadros_
 
-* Overview 
-
-- A bit of context 
-- Why Go? 
-- How we built source{d} using Go
-
 * A bit of context
+
+* The goal
+
+- Repository discovery = *find*the*clone*URLs*
+- Cloning 17.991.286 repositories = *saving*the*repositories*
+- Analyzing the repositories = *identify*who*is*doing*what* 
+
+* Ok, but why? ... because source{d}
+
 
 * What is source{d}
 
@@ -21,34 +24,30 @@ https://github.com/mcuadros
 - We *analyze* the content of *Git* repositories
 - We *monetize* through the *recruitment* (our team is being hired using this method)
 
-* Some numbers
+* Ok, and why with Go ...
 
-- +17M of repositories stored and analyzed
-- +90TB of storage 
-- +900 millions of commits analyzed
-- +30 employees / +10 nationalities
-- $6M fund raising
+* Go is ..
 
-* Why Go?
-
-- Simple and miminalistic language, *easy*to*learn*
+- Simple and minimalistic language, *easy*to*learn*
 - *Fast*to*code* as Python, Ruby or PHP, but *fast*to*execute* as Java
 - *Concurrency* is built in feature
 
+
+
 *source{d}* has being written in Go since the first day
 
-* How we build source{d} using Go
+* How we did this at source{d}
 
 * Phase #1: Repository discovery
 
-* The avilable resources 
+* The available resources 
 
 We need the entrypoints of the repositories *all*over*the*world*, so we explored 
 the available resources:
 
 - *GitHub*Archive*, is a project collecting GH API events since 2011
 - *GHTorrent*, same but since 2013, but they have alternative formats
-- *GitHub*Data*, official GitHub dataset with 2.8 millons of repositories
+- *GitHub*Data*, official GitHub dataset with 2.8 millions of repositories
 
 Nothing about other sources like BitBucket, Gitlab, etc
 
@@ -58,25 +57,25 @@ We retrieve the URL from the repositories from *different*SaaS* as:
 
 - *GitHub* - 17M repositories* - [[http://github.com/google/go-github][github.com/google/go-github.com]]
 - *BitBucket* - 150k repositories*
-- and more comming such as GitLab, CodePlex, etc.
-.caption *public repositories, not includin forks
+- and more coming such as GitLab, CodePlex, etc.
+.caption *public repositories, not including forks
 
 
 And also we *crawl* the web looking for *self-hosted* services using _cgit_ 
 
 
 
-* Phase #2: Fetching 17.991.286 repositories
+* Phase #2: Cloning 17.991.286 repositories
 
-* Cloning the repository
+* Cloning 1 repository requires:
 
-- Retrieve all the available *git*objects*, from the remote, including all branches. In [[http://shafiulazam.com/gitbook/7_the_packfile.html][packfile]] format.
+- Retrieve all the available *git*objects*, from the remote. In [[http://shafiulazam.com/gitbook/7_the_packfile.html][packfile]] format.
 
-- Packfile format is *compressed* and *deltified*, random access to it requires a full scan, so we need to build a index  
+- The packfile format is *compressed* and *deltified*, random access to it requires a full scan, so we need to *build*a*index*. 
 
-- Store other relevant information as: references, remote and configuration
+- Also we need to store other relevant information as: *references* (branches, tags, etc), *remotes* and *configuration*
 
-The process of storing and index generation is done in parallel with goroutines, to avoid read the file being written 
+#The process of storing and index generation is done in parallel with goroutines, to avoid read the file being written 
 
 * .git anatomy 
 
@@ -96,30 +95,37 @@ The process of storing and index generation is done in parallel with goroutines,
      │       └── HEAD
      └── tags
 
-* Storage in a distriuted filesystem
+* Cloning ALL the repositories in the worlds requires ... a distributed filesystem
 
-Since we are working at a massive scale we cannot simply store the spare files of a _.git_ folder we need to store this in a *efficient*way* .
+* Using a distributed filesystem
 
-Some of the requirements:
 
-- Minimun number of files, idealy *one*file*
-- *Update* without write the full file
-- *Seekable* content
+Working in a distributed filesystem is great because you have *unlimited*space** but  we *can't* simply store the *spare*files* of a _.git_ folder.
 
+We need to store this in a *efficient*way* ...
+
+- storing, ideally, *one*file* per repository
+- *update* without write the full file
+- *seek* over any file
+
+
+* Can we use zip, tar or any other archive format?
 
 * Our own archive format: śiva format
 
 We evaluated many archive formats such as: _zip_, _tar_, _har_, etc.
 None fits our requirements, so we created our *own*format*, of course with *Go*.
 
-- Constant-time random file access
-- Seekable access to the contained files 
-- Concatenable archive files
-- Open source - [[https://github.com/src-d/go-siva][github.com/src-d/go-siva]]
+- *Constant-time* random file access
+- *Seekable access* to the contained files 
+- *Concatenable* archive files
+- and of course is *open*source* - [[https://github.com/src-d/go-siva][github.com/src-d/go-siva]]
 
 .image assets/siva.png 220 _
 
 * Phase #3: Analyzing the repositories 
+
+* Let's read the commits, easy ... or not?
 
 * Extracting 967.345.715 commits
 
@@ -136,7 +142,7 @@ The first 4 object types are *well*known* by all of us, but the last two are *in
 
 * Handling git from Go
 
-git is compound of many different protocols, formats and algorithms. Thats why not many languages has available a native implementation.
+git is compound of many different protocols, formats and algorithms. That's why not many languages has available a native implementation.
 
 Available native libraries:
 
@@ -160,9 +166,26 @@ and many other very partial and abandoned implementations.
 
 
 *but*why?*
-We can perform more *low*level*operations* than other libraries. Also was extremly useful to improve our knowledge about *git*internals*. And a good oportunity to contribute to the community
+We can perform more *low*level*operations* than other libraries. Also was extremely useful to improve our knowledge about *git*internals*. And a good opoopportunityrtunity to contribute to the community
 
-* Detecting the language of 100.000.000.000 files
+* Now we have the commits, what about the changes ...
+
+* Calculating the diff
+
+Some people may think that Git stores only the changes, but this is not true, every *commit* contains *is*a*snapshot* of the full tree.
+
+When *git*diff* is executed the diff, between the files contents of the commit target by current HEAD and the previous one, is *calculated*on-the-fly*.
+
+The diff calculation is made with *longest*common*subsequence* method, and this is a *NP-hard* problem. 
+
+* So lest find something faster
+
+* Calculating the diff of the tree
+ ...
+
+* In what languages?
+
+* Detecting the language of 1.131.056.665 files
 
 The language detection can be archive using [[https://github.com/github/linguist][*linguist*]] a library created by GitHub. Linguist is used to create the famous bar:
 .image assets/languages.png _ 1000
@@ -172,15 +195,8 @@ Detection is done by:
 - Extension
 - Language disambiguation
 
-*simple-linguist*, is our port to _Go_ of the original _Ruby_ library, with a few less precission in arcane languages but with a improve of *performance*of*100x*
+*simple-linguist*, is our port to _Go_ of the original _Ruby_ library, with a few less precision in arcane languages but with a improve of *performance*of*100x*
 
 
 
-* Import recognition
-
-Another important step from the commit analysis is the import recognition, 
-
-
-* Modification identification
-To be filled
 
