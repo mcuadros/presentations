@@ -95,29 +95,31 @@ And also we *crawl* the web looking for *self-hosted* services using _cgit_
      │       └── HEAD
      └── tags
 
-* Cloning ALL the repositories in the worlds requires ... a distributed filesystem
+* Cloning ALL the repositories in the world requires ... a distributed filesystem
 
 * Using a distributed filesystem
 
 
 Working in a distributed filesystem is great because you have *unlimited*space** but  we *can't* simply store the *spare*files* of a _.git_ folder.
 
-We need to store this in a *efficient*way* ...
+We need to do this in an *efficient*way* ...
 
-- storing, ideally, *one*file* per repository
+- ideally, *one*file* per repository
 - *update* without write the full file
 - *seek* over any file
+
+.caption *if you can pay for it
 
 
 * Can we use zip, tar or any other archive format?
 
 * Our own archive format: śiva format
 
-We evaluated many archive formats such as: _zip_, _tar_, _har_, etc.
-None fits our requirements, so we created our *own*format*, of course with *Go*.
+: We evaluated many archive formats such as: _zip_, _tar_, _har_, etc.
+: None fits our requirements, so we created our *own*format*, of course with *Go*.
 
 - *Constant-time* random file access
-- *Seekable access* to the contained files
+- *Seekable*access* to the contained files
 - *Concatenable* archive files
 - and of course is *open*source* - [[https://github.com/src-d/go-siva][github.com/src-d/go-siva]]
 
@@ -152,9 +154,8 @@ Available native libraries:
 In Go:
 
 - *git2go*, wrap of _libgit2_, is the most complete implementation
-- *gogits/go*, pure _Go_, partial implementation and abandoned project
 
-and many other very partial and abandoned implementations.
+and many partial and abandoned implementations.
 
 * go-git, a pure Go git implementation
 
@@ -176,12 +177,22 @@ Some people may think that Git stores only the changes, but this is not true, ev
 
 When *git*diff* is executed the diff, between the files contents of the commit target by current HEAD and the previous one, is *calculated*on-the-fly*.
 
-The diff calculation is made with *longest*common*subsequence* method, and this is a *NP-hard* problem.
+
+* Longest common subsequence
+
+: The diff calculation is made with *longest*common*subsequence* method, and this is a *NP-hard* problem.
+
+.image assets/np-hard.jpg
 
 * So let's find something faster
 
-* Calculating the diff of the tree
- ...
+* Calculating the diff of the tree, is faster
+
+The *changed*files* can be identified *comparing* the the *tree* of the commit with the tree from his parent.
+.image assets/tree1.svg _ 700
+
+* Result of the comparision 
+.image assets/tree2.svg _ 800
 
 * In what languages?
 
@@ -196,3 +207,7 @@ Detection is done by:
 - Language disambiguation
 
 *simple-linguist*, is our port to _Go_ of the original _Ruby_ library, with a few less precision in arcane languages but with a improve of *performance*of*100x*
+
+* Questions?
+
+* Extra ball?
