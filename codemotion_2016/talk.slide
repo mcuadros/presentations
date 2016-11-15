@@ -1,8 +1,8 @@
-Analyzing 900 millions commits with Go
+Analyzing 900 million commits with Go
 16 Nov 2016
 
 Máximo Cuadros
-VP of Engineering at source{d} 
+VP of Engineering at source{d}
 mcuadros@gmail.com
 https://github.com/mcuadros
 @mcuadros_
@@ -13,7 +13,7 @@ https://github.com/mcuadros
 
 - Repository discovery = *find*the*clone*URLs*
 - Cloning 17.991.286 repositories = *saving*the*repositories*
-- Analyzing the repositories = *identify*who*is*doing*what* 
+- Analyzing the repositories = *identify*who*is*doing*what*
 
 * Ok, but why? ... because source{d}
 
@@ -28,7 +28,7 @@ https://github.com/mcuadros
 
 * Go is ..
 
-- Simple and minimalistic language, *easy*to*learn*
+- Simple and minimalist language, *easy*to*learn*
 - *Fast*to*code* as Python, Ruby or PHP, but *fast*to*execute* as Java
 - *Concurrency* is built in feature
 
@@ -40,18 +40,18 @@ https://github.com/mcuadros
 
 * Phase #1: Repository discovery
 
-* The available resources 
+* The available resources
 
-We need the entrypoints of the repositories *all*over*the*world*, so we explored 
+We need the entrypoints of the repositories *all*over*the*world*, so we explored
 the available resources:
 
 - *GitHub*Archive*, is a project collecting GH API events since 2011
 - *GHTorrent*, same but since 2013, but they have alternative formats
-- *GitHub*Data*, official GitHub dataset with 2.8 millions of repositories
+- *GitHub*Data*, official GitHub dataset with 2.8 million repositories
 
 Nothing about other sources like BitBucket, Gitlab, etc
 
-* So ... we went directly to the source 
+* So ... we went directly to the source
 
 We retrieve the URL from the repositories from *different*SaaS* as:
 
@@ -61,7 +61,7 @@ We retrieve the URL from the repositories from *different*SaaS* as:
 .caption *public repositories, not including forks
 
 
-And also we *crawl* the web looking for *self-hosted* services using _cgit_ 
+And also we *crawl* the web looking for *self-hosted* services using _cgit_
 
 
 
@@ -71,13 +71,13 @@ And also we *crawl* the web looking for *self-hosted* services using _cgit_
 
 - Retrieve all the available *git*objects*, from the remote. In [[http://shafiulazam.com/gitbook/7_the_packfile.html][packfile]] format.
 
-- The packfile format is *compressed* and *deltified*, random access to it requires a full scan, so we need to *build*a*index*. 
+- The packfile format is *compressed* and *deltified*, random access to it requires a full scan, so we need to *build*a*index*.
 
 - Also we need to store other relevant information as: *references* (branches, tags, etc), *remotes* and *configuration*
 
-#The process of storing and index generation is done in parallel with goroutines, to avoid read the file being written 
+#The process of storing and index generation is done in parallel with goroutines, to avoid read the file being written
 
-* .git anatomy 
+* .git anatomy
 
  .git
  ├── config
@@ -117,13 +117,13 @@ We evaluated many archive formats such as: _zip_, _tar_, _har_, etc.
 None fits our requirements, so we created our *own*format*, of course with *Go*.
 
 - *Constant-time* random file access
-- *Seekable access* to the contained files 
+- *Seekable access* to the contained files
 - *Concatenable* archive files
 - and of course is *open*source* - [[https://github.com/src-d/go-siva][github.com/src-d/go-siva]]
 
 .image assets/siva.png 220 _
 
-* Phase #3: Analyzing the repositories 
+* Phase #3: Analyzing the repositories
 
 * Let's read the commits, easy ... or not?
 
@@ -138,7 +138,7 @@ The commits are *contained* in the packfiles, along with other many useful objec
 - OFS Delta
 - REF Delta
 
-The first 4 object types are *well*known* by all of us, but the last two are *internal*, to the packfile format. The deltas are the method used by git for *save*space* 
+The first 4 object types are *well*known* by all of us, but the last two are *internal*, to the packfile format. The deltas are the method used by git for *save*space*
 
 * Handling git from Go
 
@@ -151,14 +151,14 @@ Available native libraries:
 
 In Go:
 
-- *git2go*, wrap of _libgit2_, is the most complete implementation 
+- *git2go*, wrap of _libgit2_, is the most complete implementation
 - *gogits/go*, pure _Go_, partial implementation and abandoned project
 
 and many other very partial and abandoned implementations.
 
 * go-git, a pure Go git implementation
 
-- Depenncy free, *pure*Go*, without any C dependency
+- Dependency free, *pure*Go*, without any C dependency
 - Highly extensible, following *open/close*principle*
 - *new*v4* aims to be a replacement of *git2go*. for reading
 
@@ -166,7 +166,7 @@ and many other very partial and abandoned implementations.
 
 
 *but*why?*
-We can perform more *low*level*operations* than other libraries. Also was extremely useful to improve our knowledge about *git*internals*. And a good opoopportunityrtunity to contribute to the community
+We can perform more *low*level*operations* than other libraries. Also was extremely useful to improve our knowledge about *git*internals*. And a good opportunity to contribute to the community
 
 * Now we have the commits, what about the changes ...
 
@@ -176,9 +176,9 @@ Some people may think that Git stores only the changes, but this is not true, ev
 
 When *git*diff* is executed the diff, between the files contents of the commit target by current HEAD and the previous one, is *calculated*on-the-fly*.
 
-The diff calculation is made with *longest*common*subsequence* method, and this is a *NP-hard* problem. 
+The diff calculation is made with *longest*common*subsequence* method, and this is a *NP-hard* problem.
 
-* So lest find something faster
+* So let's find something faster
 
 * Calculating the diff of the tree
  ...
@@ -196,7 +196,3 @@ Detection is done by:
 - Language disambiguation
 
 *simple-linguist*, is our port to _Go_ of the original _Ruby_ library, with a few less precision in arcane languages but with a improve of *performance*of*100x*
-
-
-
-
