@@ -1,8 +1,9 @@
 Analyzing 900 million commits with Go
-16 Nov 2016
+GoMAD - 16 Nov 2016
 
 Máximo Cuadros
 VP of Engineering at source{d}
+
 mcuadros@gmail.com
 https://github.com/mcuadros
 @mcuadros_
@@ -24,17 +25,6 @@ https://github.com/mcuadros
 - We *analyze* the content of *Git* repositories
 - We *monetize* through the *recruitment* (our team is being hired using this method)
 
-* Ok, and why with Go ...
-
-* Go is ..
-
-- Simple and minimalist language, *easy*to*learn*
-- *Fast*to*code* as Python, Ruby or PHP, but *fast*to*execute* as Java
-- *Concurrency* is built in feature
-
-
-
-*source{d}* has being written in Go since the first day
 
 * How we did this at source{d}
 
@@ -208,6 +198,14 @@ Detection is done by:
 
 *simple-linguist*, is our port to _Go_ of the original _Ruby_ library, with a few less precision in arcane languages but with a improve of *performance*of*100x*
 
-* Questions?
+* After 2 years with Go
 
-* Extra ball?
+* Go is great!
+
+- *source{d}* has being written in Go since the first day
+- Go is fast, robust and *fun* as no other
+- Choose the right tool for the right job, now we use *Scala* too.
+ 
+
+* Questions? 
+

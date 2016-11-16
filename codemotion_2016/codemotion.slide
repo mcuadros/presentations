@@ -1,0 +1,213 @@
+Analyzing 900 million commits with Go
+Codemotion - 19 Nov 2016
+
+Máximo Cuadros
+VP of Engineering at source{d}
+
+mcuadros@gmail.com
+https://github.com/mcuadros
+@mcuadros_
+
+* A bit of context
+
+* The goal
+
+- Repository discovery = *find*the*clone*URLs*
+- Cloning 17.991.286 repositories = *saving*the*repositories*
+- Analyzing the repositories = *identify*who*is*doing*what*
+
+* Ok, but why? ... because source{d}
+
+
+* What is source{d}
+
+- Our main goal is *understand*the*FOSS*
+- We *analyze* the content of *Git* repositories
+- We *monetize* through the *recruitment* (our team is being hired using this method)
+
+* Ok, and why with Go ...
+
+* Go is ..
+
+- Simple and minimalist language, *easy*to*learn*
+- *Fast*to*code* as Python, Ruby or PHP, but *fast*to*execute* as Java
+- *Concurrency* is built in feature
+
+
+
+*source{d}* has being written in Go since the first day
+
+* How we did this at source{d}
+
+* Phase #1: Repository discovery
+
+* The available resources
+
+We need the entrypoints of the repositories *all*over*the*world*, so we explored
+the available resources:
+
+- *GitHub*Archive*, is a project collecting GH API events since 2011
+- *GHTorrent*, same but since 2013, but they have alternative formats
+- *GitHub*Data*, official GitHub dataset with 2.8 million repositories
+
+Nothing about other sources like BitBucket, Gitlab, etc
+
+* So ... we went directly to the source
+
+We retrieve the URL from the repositories from *different*SaaS* as:
+
+- *GitHub* - 17M repositories* - [[http://github.com/google/go-github][github.com/google/go-github.com]]
+- *BitBucket* - 150k repositories*
+- and more coming such as GitLab, CodePlex, etc.
+.caption *public repositories, not including forks
+
+
+And also we *crawl* the web looking for *self-hosted* services using _cgit_
+
+
+
+* Phase #2: Cloning 17.991.286 repositories
+
+* Cloning 1 repository requires:
+
+- Retrieve all the available *git*objects*, from the remote. In [[http://shafiulazam.com/gitbook/7_the_packfile.html][packfile]] format.
+
+- The packfile format is *compressed* and *deltified*, random access to it requires a full scan, so we need to *build*a*index*.
+
+- Also we need to store other relevant information as: *references* (branches, tags, etc), *remotes* and *configuration*
+
+#The process of storing and index generation is done in parallel with goroutines, to avoid read the file being written
+
+* .git anatomy
+
+ .git
+ ├── config
+ ├── HEAD
+ ├── objects
+ │   ├── info
+ │   └── pack
+ │       ├── pack-34e2a300f8de20e6bff25834a5dd696c991714b7.idx
+ │       └── pack-34e2a300f8de20e6bff25834a5dd696c991714b7.pack
+ └── refs
+     ├── heads
+     │   └── master
+     ├── remotes
+     │   └── origin
+     │       └── HEAD
+     └── tags
+
+* Cloning ALL the repositories in the world requires ... a distributed filesystem
+
+* Using a distributed filesystem
+
+
+Working in a distributed filesystem is great because you have *unlimited*space** but  we *can't* simply store the *spare*files* of a _.git_ folder.
+
+We need to do this in an *efficient*way* ...
+
+- ideally, *one*file* per repository
+- *update* without write the full file
+- *seek* over any file
+
+.caption *if you can pay for it
+
+
+* Can we use zip, tar or any other archive format?
+
+* Our own archive format: śiva format
+
+: We evaluated many archive formats such as: _zip_, _tar_, _har_, etc.
+: None fits our requirements, so we created our *own*format*, of course with *Go*.
+
+- *Constant-time* random file access
+- *Seekable*access* to the contained files
+- *Concatenable* archive files
+- and of course is *open*source* - [[https://github.com/src-d/go-siva][github.com/src-d/go-siva]]
+
+.image assets/siva.png 220 _
+
+* Phase #3: Analyzing the repositories
+
+* Let's read the commits, easy ... or not?
+
+* Extracting 967.345.715 commits
+
+The commits are *contained* in the packfiles, along with other many useful objects:
+
+- Commit
+- Tree
+- Blob
+- Tag
+- OFS Delta
+- REF Delta
+
+The first 4 object types are *well*known* by all of us, but the last two are *internal*, to the packfile format. The deltas are the method used by git for *save*space*
+
+* Handling git from Go
+
+git is compound of many different protocols, formats and algorithms. That's why not many languages has available a native implementation.
+
+Available native libraries:
+
+- *libgit2*, pure _C_, the most used and wrapped in dozens of languages, including Go
+- *jgit*, pure _Java_, used by Eclipse, Gerrit, and many others
+
+In Go:
+
+- *git2go*, wrap of _libgit2_, is the most complete implementation
+
+and many partial and abandoned implementations.
+
+* go-git, a pure Go git implementation
+
+- Dependency free, *pure*Go*, without any C dependency
+- Highly extensible, following *open/close*principle*
+- *new*v4* aims to be a replacement of *git2go*. for reading
+
+.image assets/go-git.png 200 _
+
+
+*but*why?*
+We can perform more *low*level*operations* than other libraries. Also was extremely useful to improve our knowledge about *git*internals*. And a good opportunity to contribute to the community
+
+* Now we have the commits, what about the changes ...
+
+* Calculating the diff
+
+Some people may think that Git stores only the changes, but this is not true, every *commit* contains *is*a*snapshot* of the full tree.
+
+When *git*diff* is executed the diff, between the files contents of the commit target by current HEAD and the previous one, is *calculated*on-the-fly*.
+
+
+* Longest common subsequence
+
+: The diff calculation is made with *longest*common*subsequence* method, and this is a *NP-hard* problem.
+
+.image assets/np-hard.jpg
+
+* So let's find something faster
+
+* Calculating the diff of the tree, is faster
+
+The *changed*files* can be identified *comparing* the the *tree* of the commit with the tree from his parent.
+.image assets/tree1.svg _ 700
+
+* Result of the comparision 
+.image assets/tree2.svg _ 800
+
+* In what languages?
+
+* Detecting the language of 1.131.056.665 files
+
+The language detection can be archive using [[https://github.com/github/linguist][*linguist*]] a library created by GitHub. Linguist is used to create the famous bar:
+.image assets/languages.png _ 1000
+
+Detection is done by:
+
+- Extension
+- Language disambiguation
+
+*simple-linguist*, is our port to _Go_ of the original _Ruby_ library, with a few less precision in arcane languages but with a improve of *performance*of*100x*
+
+* Questions?
+
