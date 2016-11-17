@@ -16,26 +16,26 @@ https://github.com/mcuadros
 - Cloning 17.991.286 repositories = *saving*the*repositories*
 - Analyzing the repositories = *identify*who*is*doing*what*
 
-* Ok, but why? ... because source{d}
+* Ok, but why? ... because of source{d}
 
 
 * What is source{d}
 
-- Our main goal is *understand*the*FOSS*
+- Our main goal is to *understand*the*FOSS*
 - We *analyze* the content of *Git* repositories
-- We *monetize* through the *recruitment* (our team is being hired using this method)
+- We *monetize* through *recruitment* (our engineering team at source{d} is hired using our method)
 
 * Ok, and why with Go ...
 
 * Go is ..
 
 - Simple and minimalist language, *easy*to*learn*
-- *Fast*to*code* as Python, Ruby or PHP, but *fast*to*execute* as Java
-- *Concurrency* is built in feature
+- *Fast*to*code* like Python, Ruby or PHP, but also *fast*to*execute* like Java
+- *Concurrency* is a built-in feature
 
 
 
-*source{d}* has being written in Go since the first day
+*source{d}* has been written in Go since its first day
 
 * How we did this at source{d}
 
@@ -43,14 +43,14 @@ https://github.com/mcuadros
 
 * The available resources
 
-We need the entrypoints of the repositories *all*over*the*world*, so we explored
+We needed the entrypoints of the repositories *all*over*the*world*, so we explored
 the available resources:
 
 - *GitHub*Archive*, is a project collecting GH API events since 2011
 - *GHTorrent*, same but since 2013, but they have alternative formats
 - *GitHub*Data*, official GitHub dataset with 2.8 million repositories
 
-Nothing about other sources like BitBucket, Gitlab, etc
+Nothing about other sources like BitBucket, Gitlab, etc.
 
 * So ... we went directly to the source
 
@@ -62,7 +62,7 @@ We retrieve the URL from the repositories from *different*SaaS* as:
 .caption *public repositories, not including forks
 
 
-And also we *crawl* the web looking for *self-hosted* services using _cgit_
+Finally, we also *crawl* the web looking for *self-hosted* services using _cgit_
 
 
 
@@ -70,9 +70,9 @@ And also we *crawl* the web looking for *self-hosted* services using _cgit_
 
 * Cloning 1 repository requires:
 
-- Retrieve all the available *git*objects*, from the remote. In [[http://shafiulazam.com/gitbook/7_the_packfile.html][packfile]] format.
+- Retrieving all the available *git*objects* from the remote. In [[http://shafiulazam.com/gitbook/7_the_packfile.html][packfile]] format.
 
-- The packfile format is *compressed* and *deltified*, random access to it requires a full scan, so we need to *build*a*index*.
+- The packfile format is *compressed* and *deltified*. Random access requires a full scan, so we need to *build*a*index*.
 
 - Also we need to store other relevant information as: *references* (branches, tags, etc), *remotes* and *configuration*
 
@@ -106,7 +106,7 @@ Working in a distributed filesystem is great because you have *unlimited*space**
 We need to do this in an *efficient*way* ...
 
 - ideally, *one*file* per repository
-- *update* without write the full file
+- *update* without writing the full file
 - *seek* over any file
 
 .caption *if you can pay for it
@@ -117,12 +117,12 @@ We need to do this in an *efficient*way* ...
 * Our own archive format: śiva format
 
 : We evaluated many archive formats such as: _zip_, _tar_, _har_, etc.
-: None fits our requirements, so we created our *own*format*, of course with *Go*.
+: None of them fitted our requirements, so we created our *own*format*, of course with *Go*.
 
 - *Constant-time* random file access
 - *Seekable*access* to the contained files
 - *Concatenable* archive files
-- and of course is *open*source* - [[https://github.com/src-d/go-siva][github.com/src-d/go-siva]]
+- and of course it is *open*source* - [[https://github.com/src-d/go-siva][github.com/src-d/go-siva]]
 
 .image assets/siva.png 220 _
 
@@ -141,20 +141,20 @@ The commits are *contained* in the packfiles, along with other many useful objec
 - OFS Delta
 - REF Delta
 
-The first 4 object types are *well*known* by all of us, but the last two are *internal*, to the packfile format. The deltas are the method used by git for *save*space*
+The first 4 object types are *well-known* by all of us, but the last two are *internal* to the packfile format. The deltas are the method used by git to *save*space*
 
 * Handling git from Go
 
-git is compound of many different protocols, formats and algorithms. That's why not many languages has available a native implementation.
+git is compounded of many different protocols, formats and algorithms. That's why not many languages have available a native implementation.
 
 Available native libraries:
 
-- *libgit2*, pure _C_, the most used and wrapped in dozens of languages, including Go
+- *libgit2*, pure _C_, the most widely used and wrapped in dozens of languages, including Go
 - *jgit*, pure _Java_, used by Eclipse, Gerrit, and many others
 
 In Go:
 
-- *git2go*, wrap of _libgit2_, is the most complete implementation
+- *git2go*, wrap of _libgit2_, it is the most complete implementation
 
 and many partial and abandoned implementations.
 
@@ -168,20 +168,20 @@ and many partial and abandoned implementations.
 
 
 *but*why?*
-We can perform more *low*level*operations* than other libraries. Also was extremely useful to improve our knowledge about *git*internals*. And a good opportunity to contribute to the community
+We can perform more *low*level*operations* than with other libraries. It was also extremely useful to improve our knowledge about *git*internals*. And a good opportunity to contribute to the community.
 
 * Now we have the commits, what about the changes ...
 
 * Calculating the diff
 
-Some people may think that Git stores only the changes, but this is not true, every *commit* contains *is*a*snapshot* of the full tree.
+Some people may think that Git only stores the changes, but this is not true, every *commit*is*a*snapshot* of the full tree.
 
-When *git*diff* is executed the diff, between the files contents of the commit target by current HEAD and the previous one, is *calculated*on-the-fly*.
+When *git*diff* executes the diff between the files' contents - between the commit target, by current HEAD, and the previous on - it *calculates*it*on*the*fly*.
 
 
 * Longest common subsequence
 
-: The diff calculation is made with *longest*common*subsequence* method, and this is a *NP-hard* problem.
+: The diff calculation is made with the *longest*common*subsequence* method, and this is a *NP-hard* problem.
 
 .image assets/np-hard.jpg
 
@@ -207,7 +207,7 @@ Detection is done by:
 - Extension
 - Language disambiguation
 
-*simple-linguist*, is our port to _Go_ of the original _Ruby_ library, with a few less precision in arcane languages but with a improve of *performance*of*100x*
+*simple-linguist*, is our port to _Go_ of the original _Ruby_ library, with fewer precisions in arcane languages but with an improved *performance*of*100x*
 
 * Questions?
 
