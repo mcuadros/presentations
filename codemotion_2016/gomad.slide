@@ -21,9 +21,9 @@ https://github.com/mcuadros
 
 * What is source{d}
 
-- Our main goal is *understand*the*FOSS*
+- Our main goal is to *understand* *FOSS*
 - We *analyze* the content of *Git* repositories
-- We *monetize* through the *recruitment* (our team is being hired using this method)
+- We want to *match*people* on their *code*, not their CV
 
 
 * How we did this at source{d}
@@ -167,6 +167,7 @@ Some people may think that Git stores only the changes, but this is not true, ev
 
 When *git*diff* is executed the diff, between the files contents of the commit target by current HEAD and the previous one, is *calculated*on-the-fly*.
 
+Diff is calculated using the *Longest*common*subsequence* method
 
 * Longest common subsequence
 

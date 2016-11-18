@@ -114,6 +114,14 @@ We need to do this in an *efficient*way* ...
 
 * Can we use zip, tar or any other archive format?
 
+* ZIP format and his limitations:
+
+
+- You *can't*modify* the ZIP file
+- Knowing the *size* foreach file is *required* before start to write 
+
+.image assets/zip-64.png _ 750
+
 * Our own archive format: śiva format
 
 : We evaluated many archive formats such as: _zip_, _tar_, _har_, etc.
@@ -125,6 +133,10 @@ We need to do this in an *efficient*way* ...
 - and of course it is *open*source* - [[https://github.com/src-d/go-siva][github.com/src-d/go-siva]]
 
 .image assets/siva.png 220 _
+
+* Using siva at Google Cloud Storage
+
+.image assets/siva_pull.png _ 820
 
 * Phase #3: Analyzing the repositories
 
@@ -142,6 +154,11 @@ The commits are *contained* in the packfiles, along with other many useful objec
 - REF Delta
 
 The first 4 object types are *well-known* by all of us, but the last two are *internal* to the packfile format. The deltas are the method used by git to *save*space*
+
+* git object model
+
+.image assets/objects-example.png 530 _
+.caption Image from "Git Community Book" - http://shafiulazam.com/gitbook/index.html"
 
 * Handling git from Go
 
@@ -178,12 +195,10 @@ Some people may think that Git only stores the changes, but this is not true, ev
 
 When *git*diff* executes the diff between the files' contents - between the commit target, by current HEAD, and the previous on - it *calculates*it*on*the*fly*.
 
+.image assets/space.png 100 _
 
-* Longest common subsequence
+The diff calculation is made with the *longest*common*subsequence* algorithm, and this is a *NP-hard* problem.
 
-: The diff calculation is made with the *longest*common*subsequence* method, and this is a *NP-hard* problem.
-
-.image assets/np-hard.jpg
 
 * So let's find something faster
 
