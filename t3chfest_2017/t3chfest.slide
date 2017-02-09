@@ -1,0 +1,292 @@
+Knowing how Git works internally
+t3chfest - 9th Feb 2017
+
+Máximo Cuadros
+VP of Engineering at source{d}
+
+mcuadros@gmail.com
+https://github.com/mcuadros
+@mcuadros_
+
+* A bit of context
+
+* About me
+
+- VP of Engineering at source{d}
+- Go developer +4 years
+- Co-author of [[https://github.com/src-d/go-git/][go-git]] a Git implementation in pure Go
+- Organizer of [[https://www.meetup.com/go-mad/][GoMAD]] - Go Madrid user group
+
+* What is source{d}?
+
+- Goal: Build the first AI that understands code
+- Analyze all online open source
+- Currently analyzing +17M Git repositories
+
+.image assets/space.png 100 _
+.image http://sourced.tech/img/logos/logo-blue.svg 80 1000
+
+* Agenda
+
+During this talk, we will follow GitHub's instructions to create a new repository:
+
+	echo "# example" >> README.md
+	git init
+	git add README.md
+	git commit -m "first commit"
+	git remote add origin git@github.com:mcuadros/example.git
+	git push -u origin master
+
+
+* git init
+
+* man git init
+
+This command creates an empty Git repository - basically a .git directory with subdirectories for objects, *refs/heads* and *refs/tags*. An initial *HEAD* file that references the HEAD of the master branch is also created. _from_man_git_init_
+
+* The references
+
+A _reference_ is a pointer to a git object. In 99% of the cases, it's a commit.
+
+Three different types:
+
+- *heads* (aka branch) - mutable commit pointer - _refs/heads/master_
+- *tags* - inmutable commit pointer - _refs/tags/v1.0.0_
+- *notes* - inmutable annotated pointer to an object - _refs/notes/commits_
+
+- *remotes* - heads or tags from a given remote - _refs/remotes/origin/master_
+
+
+* How are the references stored?
+
+Each reference is stored as a text file in the *.git* folder, inside the *refs* folder.
+
+The content of the file is the SHA-1 of the object being pointed to:
+
+  refs
+    ├── heads
+    ├── tags
+    ├── remotes // create by 'git fetch' command
+    └── notes // created by 'git notes' command
+
+
+* HEAD
+
+The *HEAD* is a special type of reference called _symbolic_reference_: it's a reference pointing to another reference. The goal is to *track*the*current*branch*.
+
+_HEAD_ is stored in the root of `.git` dir.
+
+
+ $ cat .git/HEAD
+ ref: refs/heads/master
+
+If the _HEAD_ reference points to a commit, it's a *detached*head* repository.
+
+* The Objects
+
+All the *content* in a git repository is *stored*as*objects*.
+
+The objects are identified by the SHA-1 sum of itself.
+
+* Result of 'git init'
+
+ .git
+ ├── config
+ ├── HEAD
+ ├── objects
+ │   ├── info
+ │   └── pack
+ └── refs
+     ├── heads
+     └── tags
+
+
+The _.git_ folder is created with the basic structure and the _config_ file is initialized. Finally, the *HEAD* file is created *pointing* to a *non-existent*branch* _refs/heads/master_
+
+* git add README.md
+
+* man git add
+
+This command updates the index using the current content found in the working tree, to prepare the content staged for the next commit.
+
+* Working tree and Staging area
+
+A *working*tree* or working directory is the directory tree of files that you see and edit.
+
+The *staging*area* defines what will go into your next commit.
+
+.image assets/areas.png 400 _
+
+* The Index
+
+The *index* is a binary file located at _.git/index_ that tracks information such as: modification time, inode, permissions and other aspects of the *working*tree*.
+
+The *index* also contains the *staging*area*.
+
+The _git_status_ command is the result of comparing the information tracked from the working tree and its current status.
+
+
+.image assets/space.png 120 _
+
+The index is one of the *most*refactored*binary*formats* in git, it has 4 different versions.
+
+* The Blob Object
+
+The blob contains the size and *full*content* of a single *file*.
+
+The hash of a blob object is always the same as long the content is the same. This means that any other file in other repositories with the same content will have the same hash.
+
+.image assets/blob.svg 240 _
+
+
+* Result of 'git add README.md'
+
+ .git
+ ├── config
+ ├── HEAD
+ ├── index
+ ├── objects
+ │   ├── 02
+ │   │   └── dc8ac17f7e5a0152aa8686d25464b3e04f70ff
+ │   ├── info
+ │   └── pack
+ └── refs
+     ├── heads
+     └── tags
+
+
+- The _index_file_ is created describing the *intent*to*add* the README.md to the repository and also the meta information about the status of the file.
+
+- A new _blob_object_ is stored in the _objects_ folder with the *content* of the README.md.
+
+
+* git commit -m "first commit"
+
+* man git commit
+
+Stores the current contents of the index in a new commit along with a log message from the user describing the changes.
+
+* The Tree Object
+
+A single tree object contains one or more *tree*entries*, each of which contains a SHA-1 pointer to a *blob*, or another *tree*, with its associated mode, type, and filename.
+
+
+.image assets/tree_blob.svg 240 _
+
+
+* The Tree Object - Example
+
+.image assets/tree_tree.svg 440 _
+
+All the content in a git repository is stored as trees, and blob, objects.
+
+* The Commit Object
+
+A commit *labels*a*tree* with a comment, keeps record of the committer and its author.
+
+.image assets/commit.svg 300 _
+
+
+* Result of 'git commit -m "first commit"'
+
+ .git
+ ├── config
+ ├── HEAD
+ ├── index
+ ├── objects
+ │   ├── 02
+ │   │   └── dc8ac17f7e5a0152aa8686d25464b3e04f70ff
+ │   ├── 37
+ │   │   └── cc08218a8d5c6f295dd669fd1a32f915342816
+ │   ├── 80
+ │   │   └── 243d8382a9b2489b6e9a3620ebe47ac73463f4
+ │   ├── info
+ │   └── pack
+ └── refs
+     ├── heads
+     │   └── master
+     └── tags
+
+
+- New _tree_object_ (37cc082) pointing to the existent blob object.
+- New _commit_object_ (80243d8) pointing to the tree, with the message "first commit".
+- The _refs/heads/master_ pointing to the new commit.
+
+* git remote add origin git@github.com:mcuadros/example.git
+
+* man git remote
+
+Manage the set of repositories ("remotes") whose branches you track.
+
+
+* Result of 'git remote add origin git@github.com:mcuadros/example.git'
+
+ $ cat .git/config
+ ...
+ [remote "origin"]
+         url = git@github.com:mcuadros/example.git
+         fetch = +refs/heads/*:refs/remotes/origin/*
+ [branch "master"]
+         remote = origin
+         merge = refs/heads/master
+
+- A new remote called _origin_ is added pointing to the given URL.
+- A new branch called _master_ is added pointing to the reference _refs/heads/master_ at the remote origin.
+
+* git push -u origin master
+
+* man git push
+
+Updates remote refs using local refs, while sending objects necessary to complete the given refs.
+
+
+* The Packfile
+
+The packfile is an *archive*object*format*. It's used in network communications and, at times, to store the objects in local repositories.
+
+- Stores *any*kind* of *object* types: tree, commit, blob, etc.
+- Every stored object is *compressed* individually using _zlib_.
+- Contains *checksums* for all the objects and the packfile itself.
+- Uses *delta*compression* to minimize the amount of data used.
+
+* The Delta Objects
+
+The *delta*compression* used inside of the packfile is supported by two different git objects, _REF__DELTA_ and _OFS__DELTA_
+
+.image assets/delta.svg 400 _
+
+* Result of 'git push -u origin master'
+
+ .git
+ ├── config
+ ├── HEAD
+ ├── index
+ ├── objects
+ │   └── ...
+ └── refs
+     ├── heads
+     │   └── master
+     ├── remotes
+     │   └── origin
+     │       └── master
+     └── tags
+
+
+- All the objects from the reference `refs/heads/master` are sent to the server described by the remote `master`.
+- The reference `refs/remotes/heads/master` is created pointing to commit.
+
+* Our repository at GitHub
+
+.image assets/github.png _ 1000
+
+* That's all folks!
+
+* Further reading
+
+- Git Book - Internals - [[https://git-scm.com/book/en/v1/Git-Internals]]
+
+- Reimplementing “git clone” in Haskell from the bottom up - [[http://stefan.saasen.me/articles/git-clone-in-haskell-from-the-bottom-up/]]
+
+- Technical Documentation at Git repository - [[https://github.com/git/git/tree/master/Documentation/technical]]
+
+* Questions?
