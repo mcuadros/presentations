@@ -1,0 +1,72 @@
+AsCode
+The Real Infrastructure as Code
+
+Máximo Cuadros
+CTO at source{d}
+@mcuadros_
+httpss://github.com/mcuadros/ascode
+
+* What?
+
+AsCode is a tool for define infrastructure as code using the *Starlark* language on top of *Terraform*. 
+
+* Why?
+
+- HCL is great but isn't it a programming language.
+- HCL is really limited even HCL2+HIL at Terraform 0.12.
+
+Since HCL is a data-interchange format, in the best case with HIL we can say that is a declarative
+language, this forces us to be really inventive to describe medium to large infrastructures.
+
+* Why Starlark?
+
+- Is a dialect of Python
+- Intended for use as a configuration language
+- Small and simple language
+- Familiar highly readable syntax
+- Most stable and complete interpreter of a script language written in Go
+
+
+https://github.com/google/starlark-go
+
+* How?
+
+.image schema.png 362 900
+
+
+* Features
+
+- Generates human readable HCL
+- Supports any Terraform provider or provisioner
+- Improves the reusability of the code
+- Improves the readability of the code
+- Simplifies the creation of complex configurations
+- More complete built-in functions
+
+* Demo Time!
+
+* Basic Demo
+
+.iframe http://127.0.0.1:3000/ 590 970
+
+
+* Complex Demo
+
+.iframe http://localhost:3000/?aws%20%3D%20provider%28%22aws%22%29%0Aaws.region%20%3D%20%22us-west-2%22%0A%0A%23%20It%20creates%20a%20new%20instance%20for%20the%20given%20name%2C%20distro%20and%20type.%0Adef%20new_instance%28name%2C%20distro%2C%20type%3D%22t2.micro%22%29%3A%0A%20%20%20%20instance%20%3D%20aws.resource.instance%28name%29%0A%20%20%20%20instance.instance_type%20%3D%20type%0A%20%20%20%20instance.ami%20%3D%20get_ami_id%28distro%29%0A%0A%20%20%20%20return%20instance%0A%0Aamis%20%3D%20%7B%7D%0Aami_names_owners%20%3D%20%7B%0A%20%20%20%20%22ubuntu%22%3A%20%5B%22ubuntu%2Fimages%2F%2A%2Fubuntu-xenial-16.04-amd64-server-%2A%22%2C%20%22099720109477%22%5D%2C%0A%20%20%20%20%22ecs%22%3A%20%5B%22%2Aamazon-ecs-optimized%22%2C%20%22591542846629%22%5D%2C%0A%7D%0A%0A%23%20We%20create%20the%20AMI%20data-source%20for%20the%20given%20distro.%0Adef%20get_ami_id%28distro%29%3A%0A%20%20%20%20if%20distro%20in%20amis%3A%0A%20%20%20%20%20%20%20%20return%20amis%5Bdistro%5D%0A%0A%20%20%20%20data%20%3D%20ami_names_owners%5Bdistro%5D%0A%0A%20%20%20%20ami%20%3D%20aws.data.ami%28distro%29%0A%20%20%20%20ami.most_recent%20%3D%20True%0A%20%20%20%20ami.filter%28name%3D%22name%22%2C%20values%3D%5Bdata%5B0%5D%5D%29%0A%20%20%20%20ami.filter%28name%3D%22virtualization-type%22%2C%20values%3D%5B%22hvm%22%5D%29%0A%20%20%20%20ami.owners%20%3D%20%5Bdata%5B1%5D%5D%0A%0A%20%20%20%20amis%5Bdistro%5D%20%3D%20ami.id%0A%20%20%20%20return%20ami.id%0A%0A%23%20Creates%2020%20instances%20of%20each%20distro.%0Afor%20i%20in%20range%2820%29%3A%0A%20%20%20%20new_instance%28%22ubuntu_%25d%22%20%25%20i%2C%20%22ubuntu%22%29%0A%20%20%20%20new_instance%28%22ecs_%25d%22%20%25%20i%2C%20%22ecs%22%29%0A%0Aprint%28hcl%28aws%29%29 590 970
+
+* Using built-In modules
+
+.iframe http://localhost:3000/?load%28%22encoding%2Fbase64%22%2C%20%22base64%22%29%0Aload%28%22http%22%2C%20%22http%22%29%0A%0Adec%20%3D%20base64.encode%28%22ascode%20is%20amazing%22%29%0A%0Amsg%20%3D%20http.get%28%22https%3A%2F%2Fhttpbin.org%2Fbase64%2F%25s%22%20%25%20dec%29%0Aprint%28msg.body%28%29%29 590 970
+
+* DevOps Days Caceres March 5th and 6th
+
+- Date: March 5th and 6th, 2020
+- Location: Caceres, Extremadura
+- Talks in the morning: 30-45 minutes, mixed with lighting talks.
+- Openspaces in the afternoon.
+
+.image dd-logo.png 300 370
+
+* Questions?
+
+
